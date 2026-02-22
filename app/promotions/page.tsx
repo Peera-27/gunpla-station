@@ -8,7 +8,7 @@ export default function NotFound() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,150,255,0.2)_0%,black_70%)]" />
 
       {/* Scanline Effect */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:100%_3px] opacity-20" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] bg-size-[100%_3px] opacity-20" />
 
       <div className="relative z-10 text-center">
         {/* 404 Text */}
@@ -21,7 +21,7 @@ export default function NotFound() {
         </p>
 
         {/* Mecha Silhouette */}
-        <div className="mx-auto mb-8 h-40 w-40 bg-gradient-to-b from-cyan-400 to-blue-700 opacity-70 blur-xl rounded-full animate-ping" />
+        <div className="mx-auto mb-8 h-40 w-40 bg-linear-to-b from-cyan-400 to-blue-700 opacity-70 blur-xl rounded-full animate-ping" />
 
         <p className="mb-8 text-gray-400">
           The unit you are searching for has been destroyed or relocated.

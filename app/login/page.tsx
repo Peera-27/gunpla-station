@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { Mail, Lock } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,6 +33,11 @@ export default function LoginPage() {
       } else {
         setSuccessMsg("Login successful! Redirecting...");
         setTimeout(() => router.push("/"), 1500);
+        Swal.fire({
+          icon: "success",
+          title: "Login successful!",
+          text: "You have successfully logged in.",
+        });
       }
     } else {
       const { error } = await supabase.auth.signUp({ email, password });
