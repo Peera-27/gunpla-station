@@ -301,7 +301,7 @@ export default function CartPage() {
                       <Upload className="w-8 h-8 text-gray-400 dark:text-gray-500 mb-2" />
                       <p className="text-sm text-gray-500 dark:text-gray-400 px-4 text-center">
                         {slipFile ? (
-                          <span className="text-blue-600 dark:text-blue-400 font-bold truncate block max-w-[200px]">
+                          <span className="text-blue-600 dark:text-blue-400 font-bold truncate block max-w-50">
                             {slipFile.name}
                           </span>
                         ) : (

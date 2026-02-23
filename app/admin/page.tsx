@@ -257,7 +257,26 @@ export default function AdminPage() {
                   <option value="HG">HG (High Grade)</option>
                   <option value="RG">RG (Real Grade)</option>
                   <option value="MG">MG (Master Grade)</option>
-                  <option value="Tools">อุปกรณ์ (Tools)</option>
+                  <option value="PG">PG (Perfect Grade)</option>
+                  <option value="SD">SD (Special Grade)</option>
+                  <option value="FM">FM (Full Metal)</option>
+                  <option value="RE/100">RE/100</option>
+                  <option value="Mega Size">Mega Size</option>
+                  <option value="Nipper">Nipper</option>
+                  <option value="Single Blade Nipper">
+                    Single Blade Nipper
+                  </option>
+                  <option value="Sanding">Sanding</option>
+                  <option value="Glass File">Glass File</option>
+                  <option value="Hobby Knife">Hobby Knife</option>
+                  <option value="Tweezers">Tweezers</option>
+                  <option value="Airbrush">Airbrush</option>
+                  <option value="Compressor">Compressor</option>
+                  <option value="Primer">Primer</option>
+                  <option value="Topcoat">Topcoat</option>
+                  <option value="Decal">Decal</option>
+                  <option value="Action Base">Action Base</option>
+                  <option value="Tools">Tools</option>
                 </select>
               </div>
 
@@ -271,7 +290,7 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setImageFile(e.target.files ? e.target.files[0] : null)
                   }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/30  hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50 transition-colors"
                 />
               </div>
 

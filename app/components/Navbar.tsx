@@ -180,7 +180,7 @@ export default function Navbar() {
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-1"
+                      className="cursor-pointer text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-1"
                       title="ออกจากระบบ"
                     >
                       <LogOut className="h-5 w-5" />
@@ -198,7 +198,7 @@ export default function Navbar() {
 
               {/* 3. ตะกร้าสินค้า */}
               <Link href="/cart">
-                <button className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition relative mt-1">
+                <button className="cursor-pointer text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition relative mt-1">
                   <ShoppingCart className="h-6 w-6" />
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-sm">
                     {mounted ? totalItems : 0}
@@ -213,7 +213,7 @@ export default function Navbar() {
                 onClick={() =>
                   setTheme(resolvedTheme === "dark" ? "light" : "dark")
                 }
-                className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="cursor-pointer text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 {resolvedTheme === "dark" ? (
                   <Sun className="h-5 w-5" />
@@ -225,8 +225,8 @@ export default function Navbar() {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center">
-              <button className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none">
-                <Menu className="h-7 w-7" />
+              <button className="cursor-pointer text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none">
+                <Menu className="h-7 w-7 " />
               </button>
             </div>
           </div>
