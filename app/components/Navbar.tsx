@@ -114,12 +114,7 @@ export default function Navbar() {
             >
               Home
             </Link>
-            <Link
-              href="/promotions"
-              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition"
-            >
-              Promotions
-            </Link>
+
             <Link
               href="/about"
               className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition"

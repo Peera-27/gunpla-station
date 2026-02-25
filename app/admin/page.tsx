@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
-import { Trash2, PlusCircle, ArrowLeft, Minus } from "lucide-react";
+import { Trash2, PlusCircle, ArrowLeft, Minus, Edit, X } from "lucide-react"; // 🌟 เพิ่ม Edit และ X
 import Swal from "sweetalert2";
 
 export default function AdminPage() {
@@ -13,7 +13,11 @@ export default function AdminPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [checking, setChecking] = useState(true);
 
-  // State สำหรับฟอร์มเพิ่มสินค้า
+  // 🌟 State สำหรับระบบ Add / Edit
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string>("");
+
+  // State สำหรับฟอร์มสินค้า
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
@@ -57,14 +61,40 @@ export default function AdminPage() {
     checkAdmin();
   }, [router]);
 
-  // 2. ฟังก์ชันเพิ่มสินค้า
-  const handleAddProduct = async (e: React.FormEvent) => {
+  // 🌟 ฟังก์ชันเมื่อกดปุ่ม "แก้ไข" ในตาราง
+  const handleEditClick = (product: any) => {
+    setEditingId(product.id);
+    setName(product.name);
+    setPrice(product.price.toString());
+    setStock(product.stock.toString());
+    setDescription(product.description || "");
+    setCategory(product.category || "HG");
+    setExistingImageUrl(product.image_url || "");
+    setImageFile(null);
+    window.scrollTo({ top: 0, behavior: "smooth" }); // เลื่อนจอกลับไปด้านบนสุด
+  };
+
+  // 🌟 ฟังก์ชันยกเลิกการแก้ไข (ล้างฟอร์ม)
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setName("");
+    setPrice("");
+    setStock("");
+    setDescription("");
+    setCategory("HG");
+    setExistingImageUrl("");
+    setImageFile(null);
+  };
+
+  // 2. ฟังก์ชัน Submit (ทำงานทั้งตอน เพิ่ม และ แก้ไข)
+  const handleSubmitProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUploading(true);
 
     try {
-      let finalImageUrl = "";
+      let finalImageUrl = existingImageUrl; // ถ้าไม่ได้อัปรูปใหม่ ให้ใช้ URL เดิม
 
+      // ถ้ามีการอัปโหลดรูปภาพใหม่
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop();
         const safeFileName = `product-${Date.now()}.${fileExt}`;
@@ -82,39 +112,61 @@ export default function AdminPage() {
         finalImageUrl = publicUrlData.publicUrl;
       }
 
-      const { error } = await supabase.from("products").insert([
-        {
-          name,
-          price: Number(price),
-          stock: Number(stock),
-          description,
-          category,
-          image_url: finalImageUrl,
-        },
-      ]);
+      // 🌟 แยกเงื่อนไข แก้ไข (Update) กับ เพิ่มใหม่ (Insert)
+      if (editingId) {
+        // อัปเดตข้อมูล
+        const { error } = await supabase
+          .from("products")
+          .update({
+            name,
+            price: Number(price),
+            stock: Number(stock),
+            description,
+            category,
+            image_url: finalImageUrl,
+          })
+          .eq("id", editingId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      Swal.fire({
-        icon: "success",
-        title: "สำเร็จ!",
-        text: "เพิ่มสินค้าเรียบร้อยแล้ว",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+        Swal.fire({
+          icon: "success",
+          title: "อัปเดตสำเร็จ!",
+          text: "แก้ไขข้อมูลสินค้าเรียบร้อยแล้ว",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        // เพิ่มข้อมูลใหม่
+        const { error } = await supabase.from("products").insert([
+          {
+            name,
+            price: Number(price),
+            stock: Number(stock),
+            description,
+            category,
+            image_url: finalImageUrl,
+          },
+        ]);
 
-      setName("");
-      setPrice("");
-      setStock("");
-      setDescription("");
-      setCategory("HG");
-      setImageFile(null);
-      fetchProducts();
+        if (error) throw error;
+
+        Swal.fire({
+          icon: "success",
+          title: "สำเร็จ!",
+          text: "เพิ่มสินค้าเรียบร้อยแล้ว",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+
+      handleCancelEdit(); // ล้างฟอร์ม
+      fetchProducts(); // โหลดข้อมูลใหม่
     } catch (error: any) {
       Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
-        text: error.message || "ไม่สามารถเพิ่มสินค้าได้",
+        text: error.message || "ไม่สามารถบันทึกข้อมูลได้",
       });
     } finally {
       setIsUploading(false);
@@ -173,7 +225,6 @@ export default function AdminPage() {
     );
 
   return (
-    // 🌟 เติม dark:bg-gray-900 ให้พื้นหลังหลัก
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 transition-colors duration-300">
       <div className="max-w-6xl mx-auto">
         {/* หัวหน้าเว็บ */}
@@ -195,13 +246,32 @@ export default function AdminPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* --- ฟอร์มเพิ่มสินค้า (ซ้าย) --- */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-fit transition-colors">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
-              <PlusCircle className="text-green-500 dark:text-green-400" />{" "}
-              เพิ่มสินค้าใหม่
-            </h2>
-            <form onSubmit={handleAddProduct} className="space-y-4">
+          {/* --- ฟอร์มเพิ่ม/แก้ไข สินค้า (ซ้าย) --- */}
+          <div
+            className={`p-6 rounded-xl shadow-sm border h-fit transition-colors ${editingId ? "bg-yellow-50 border-yellow-200 dark:bg-yellow-900/10 dark:border-yellow-700/50" : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"}`}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2
+                className={`text-xl font-bold flex items-center gap-2 ${editingId ? "text-yellow-700 dark:text-yellow-400" : "text-gray-900 dark:text-white"}`}
+              >
+                {editingId ? (
+                  <Edit className="w-6 h-6" />
+                ) : (
+                  <PlusCircle className="text-green-500 dark:text-green-400" />
+                )}
+                {editingId ? "แก้ไขรายละเอียดสินค้า" : "เพิ่มสินค้าใหม่"}
+              </h2>
+              {editingId && (
+                <button
+                  onClick={handleCancelEdit}
+                  className="text-gray-400 hover:text-red-500 transition-colors bg-white dark:bg-gray-800 rounded-full p-1 shadow-sm border dark:border-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+
+            <form onSubmit={handleSubmitProduct} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Name
@@ -282,15 +352,30 @@ export default function AdminPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  รูปภาพสินค้า (Image)
+                  รูปภาพสินค้า (Image){" "}
+                  {editingId && (
+                    <span className="text-xs text-blue-500 font-normal ml-2">
+                      *ไม่ต้องเลือกถ้าใช้รูปเดิม
+                    </span>
+                  )}
                 </label>
+                {/* 🌟 แสดงรูปเดิมถ้ากำลังแก้ไข */}
+                {editingId && existingImageUrl && (
+                  <div className="mb-2 w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border dark:border-gray-700">
+                    <img
+                      src={existingImageUrl}
+                      alt="Current"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) =>
                     setImageFile(e.target.files ? e.target.files[0] : null)
                   }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/30  hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/30 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50 transition-colors"
                 />
               </div>
 
@@ -307,18 +392,37 @@ export default function AdminPage() {
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={isUploading}
-                className="w-full bg-blue-600 dark:bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600 flex justify-center items-center gap-2"
-              >
-                {isUploading ? "กำลังอัปโหลดข้อมูล..." : "บันทึกสินค้า"}
-              </button>
+              <div className="flex gap-2 pt-2">
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="w-1/3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    ยกเลิก
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  disabled={isUploading}
+                  className={`flex-1 text-white font-bold py-3 rounded-lg transition-colors flex justify-center items-center gap-2 disabled:bg-gray-400 dark:disabled:bg-gray-600 ${
+                    editingId
+                      ? "bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700"
+                      : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                  }`}
+                >
+                  {isUploading
+                    ? "กำลังโหลด..."
+                    : editingId
+                      ? "อัปเดตข้อมูล"
+                      : "บันทึกสินค้า"}
+                </button>
+              </div>
             </form>
           </div>
 
           {/* --- ตารางแสดงสินค้า (ขวา) --- */}
-          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors h-fit">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 transition-colors">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 สินค้าในระบบทั้งหมด ({products.length} รายการ)
@@ -340,7 +444,6 @@ export default function AdminPage() {
                     <th className="p-4 font-semibold text-gray-600 dark:text-gray-300">
                       สต็อก
                     </th>
-                    {/* 🌟 รวบช่องปุ่มจัดการให้เป็นคอลัมน์เดียว */}
                     <th className="p-4 font-semibold text-gray-600 dark:text-gray-300 text-center">
                       จัดการ
                     </th>
@@ -350,7 +453,7 @@ export default function AdminPage() {
                   {products.map((p) => (
                     <tr
                       key={p.id}
-                      className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                      className={`border-b dark:border-gray-700 transition-colors ${editingId === p.id ? "bg-yellow-50 dark:bg-yellow-900/20" : "hover:bg-gray-50 dark:hover:bg-gray-700/50"}`}
                     >
                       <td className="p-4">
                         {p.image_url ? (
@@ -383,9 +486,18 @@ export default function AdminPage() {
                         </span>
                       </td>
 
-                      {/* 🌟 รวมปุ่ม ลบ, ลด, เพิ่ม ไว้ในช่องเดียวกันแบบสวยๆ */}
                       <td className="p-4">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-1 sm:gap-2">
+                          {/* 🌟 ปุ่มแก้ไข (Edit) */}
+                          <button
+                            onClick={() => handleEditClick(p)}
+                            className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                            title="แก้ไขรายละเอียด"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+
+                          {/* ปุ่มบวก/ลบสต็อก */}
                           <button
                             onClick={() => handleUpdateStock(p.id, p.stock - 1)}
                             className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
@@ -400,9 +512,11 @@ export default function AdminPage() {
                           >
                             <PlusCircle className="w-4 h-4 text-green-500" />
                           </button>
+
+                          {/* ปุ่มลบ */}
                           <button
                             onClick={() => handleDelete(p.id)}
-                            className="p-2 text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors ml-2"
+                            className="p-2 text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors sm:ml-2"
                             title="ลบสินค้า"
                           >
                             <Trash2 className="w-4 h-4 text-red-500" />
